@@ -10,25 +10,21 @@ const (
 
 type square struct {
 	eff.Shape
-	state int
-	point eff.Point
+	state     int
+	point     eff.Point
+	mouseOver bool
 }
 
 func (s *square) setState(state int) {
 	s.state = state
 	s.Clear()
 	if state == defaultState {
-		evenEvenColor := eff.Color{R: 0xEE, G: 0xEE, B: 0xEE, A: 0xFF}
-		evenOddColor := eff.Color{R: 0xE9, G: 0xE9, B: 0xE9, A: 0xFF}
-		oddEvenColor := eff.Color{R: 0xE5, G: 0xE5, B: 0xE5, A: 0xFF}
-		oddOddColor := eff.Color{R: 0xE1, G: 0xE1, B: 0xE1, A: 0xFF}
-		color := evenEvenColor
-		if s.point.X%2 == 1 && s.point.Y%2 == 0 {
-			color = evenOddColor
-		} else if s.point.X%2 == 0 && s.point.Y%2 == 1 {
-			color = oddEvenColor
-		} else if s.point.X%2 == 1 && s.point.Y%2 == 1 {
-			color = oddOddColor
+		color := eff.Color{R: 0xEE, G: 0xEE, B: 0xEE, A: 0xFF}
+		if s.point.X%2 == 1 {
+			color.Add(-5)
+		}
+		if s.point.Y%2 == 1 {
+			color.Add(-5)
 		}
 
 		s.SetBackgroundColor(color)
@@ -48,6 +44,26 @@ func (s *square) setState(state int) {
 		)
 	}
 }
+
+func (s *square) Hitbox() eff.Rect {
+	return s.ParentOffsetRect()
+}
+
+func (s *square) MouseDown(left bool, middle bool, right bool) {}
+func (s *square) MouseUp(left bool, middle bool, right bool)   {}
+func (s *square) MouseOver() {
+	s.mouseOver = true
+	color := s.BackgroundColor()
+	color.Add(0x1E)
+	s.SetBackgroundColor(color)
+}
+func (s *square) MouseOut() {
+	s.mouseOver = false
+	color := s.BackgroundColor()
+	color.Add(-0x1E)
+	s.SetBackgroundColor(color)
+}
+func (s *square) IsMouseOver() bool { return s.mouseOver }
 
 func newSquare(point eff.Point, size int) *square {
 	s := &square{}

@@ -33,6 +33,71 @@ func (g *game) init(c eff.Canvas) {
 		}, squareSize)
 		board.AddChild(s)
 		g.squares = append(g.squares, s)
+		c.AddClickable(s)
+	}
+
+	grid := &eff.Shape{}
+	grid.SetRect(eff.Rect{
+		X: 0,
+		Y: 0,
+		W: board.Rect().W,
+		H: board.Rect().H,
+	})
+	board.AddChild(grid)
+	for i := 0; i < g.pd.gridSize.X; i++ {
+		grid.DrawLine(
+			eff.Point{
+				X: i * squareSize,
+				Y: 0,
+			},
+			eff.Point{
+				X: i * squareSize,
+				Y: grid.Rect().H,
+			},
+			eff.Black(),
+		)
+	}
+	grid.DrawLine(
+		eff.Point{
+			X: grid.Rect().W - 1,
+			Y: 0,
+		},
+		eff.Point{
+			X: grid.Rect().W - 1,
+			Y: grid.Rect().H,
+		},
+		eff.Black(),
+	)
+
+	for i := 0; i < g.pd.gridSize.Y; i++ {
+		grid.DrawLine(
+			eff.Point{
+				X: 0,
+				Y: i * squareSize,
+			},
+			eff.Point{
+				X: grid.Rect().W,
+				Y: i * squareSize,
+			},
+			eff.Black(),
+		)
+	}
+
+	grid.DrawLine(
+		eff.Point{
+			X: 0,
+			Y: grid.Rect().H - 1,
+		},
+		eff.Point{
+			X: grid.Rect().W,
+			Y: grid.Rect().H - 1,
+		},
+		eff.Black(),
+	)
+
+	for _, p := range g.pd.squares {
+		index := p.Y*g.pd.gridSize.X + p.X
+		g.squares[index].setState(fillState)
 	}
 }
 
