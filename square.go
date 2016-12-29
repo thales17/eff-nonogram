@@ -29,7 +29,7 @@ func (s *square) setState(state int) {
 
 		s.SetBackgroundColor(color)
 	} else if state == fillState {
-		s.SetBackgroundColor(eff.Black())
+		s.SetBackgroundColor(eff.Color{R: 0x33, B: 0x33, G: 0x33, A: 0xFF})
 	} else if state == xState {
 		s.DrawLine(
 			eff.Point{X: 0, Y: 0},

@@ -1,7 +1,13 @@
 package main
 
-import "github.com/forestgiant/eff"
-import "math"
+import (
+	"log"
+	"math"
+
+	"fmt"
+
+	"github.com/forestgiant/eff"
+)
 
 type game struct {
 	eff.Shape
@@ -12,13 +18,19 @@ type game struct {
 func (g *game) init(c eff.Canvas) {
 	g.SetRect(c.Rect())
 	g.SetBackgroundColor(eff.White())
-	cellW := c.Rect().W / g.pd.gridSize.X
-	cellH := c.Rect().H / g.pd.gridSize.Y
+
+	// Squares
+	cellW := c.Rect().W / (g.pd.gridSize.X + (g.pd.gridSize.X / 2))
+	cellH := c.Rect().H / (g.pd.gridSize.Y + (g.pd.gridSize.Y / 2))
 	squareSize := int(math.Min(float64(cellW), float64(cellH)))
+	legendW := squareSize * (g.pd.gridSize.X / 2)
+	legendH := squareSize * (g.pd.gridSize.Y / 2)
+	boardLegendW := squareSize*(g.pd.gridSize.X) + legendW
+	boardLegendH := squareSize*(g.pd.gridSize.Y) + legendH
 	board := &eff.Shape{}
 	board.SetRect(eff.Rect{
-		X: (c.Rect().W - (squareSize * g.pd.gridSize.X)) / 2,
-		Y: (c.Rect().H - (squareSize * g.pd.gridSize.Y)) / 2,
+		X: (c.Rect().W-boardLegendW)/2 + legendW,
+		Y: (c.Rect().H-boardLegendH)/2 + legendH,
 		W: squareSize * g.pd.gridSize.X,
 		H: squareSize * g.pd.gridSize.Y,
 	})
@@ -26,6 +38,7 @@ func (g *game) init(c eff.Canvas) {
 	g.AddChild(board)
 	c.AddChild(g)
 
+	//Grid
 	for i := 0; i < g.pd.gridSize.X*g.pd.gridSize.Y; i++ {
 		s := newSquare(eff.Point{
 			X: i % g.pd.gridSize.X,
@@ -44,7 +57,12 @@ func (g *game) init(c eff.Canvas) {
 		H: board.Rect().H,
 	})
 	board.AddChild(grid)
+	gridBlue := eff.Color{R: 0x06, G: 0x5A, B: 0x82, A: 0xFF}
 	for i := 0; i < g.pd.gridSize.X; i++ {
+		color := eff.Black()
+		if i%5 == 0 && i > 0 {
+			color = gridBlue
+		}
 		grid.DrawLine(
 			eff.Point{
 				X: i * squareSize,
@@ -54,8 +72,32 @@ func (g *game) init(c eff.Canvas) {
 				X: i * squareSize,
 				Y: grid.Rect().H,
 			},
-			eff.Black(),
+			color,
 		)
+		if i%5 == 0 && i > 0 {
+			grid.DrawLine(
+				eff.Point{
+					X: i*squareSize - 1,
+					Y: 0,
+				},
+				eff.Point{
+					X: i*squareSize - 1,
+					Y: grid.Rect().H,
+				},
+				color,
+			)
+			grid.DrawLine(
+				eff.Point{
+					X: i*squareSize + 1,
+					Y: 0,
+				},
+				eff.Point{
+					X: i*squareSize + 1,
+					Y: grid.Rect().H,
+				},
+				color,
+			)
+		}
 	}
 	grid.DrawLine(
 		eff.Point{
@@ -70,6 +112,10 @@ func (g *game) init(c eff.Canvas) {
 	)
 
 	for i := 0; i < g.pd.gridSize.Y; i++ {
+		color := eff.Black()
+		if i%5 == 0 && i > 0 {
+			color = gridBlue
+		}
 		grid.DrawLine(
 			eff.Point{
 				X: 0,
@@ -79,8 +125,32 @@ func (g *game) init(c eff.Canvas) {
 				X: grid.Rect().W,
 				Y: i * squareSize,
 			},
-			eff.Black(),
+			color,
 		)
+		if i%5 == 0 && i > 0 {
+			grid.DrawLine(
+				eff.Point{
+					X: 0,
+					Y: i*squareSize - 1,
+				},
+				eff.Point{
+					X: grid.Rect().W,
+					Y: i*squareSize - 1,
+				},
+				color,
+			)
+			grid.DrawLine(
+				eff.Point{
+					X: 0,
+					Y: i*squareSize + 1,
+				},
+				eff.Point{
+					X: grid.Rect().W,
+					Y: i*squareSize + 1,
+				},
+				color,
+			)
+		}
 	}
 
 	grid.DrawLine(
@@ -95,6 +165,70 @@ func (g *game) init(c eff.Canvas) {
 		eff.Black(),
 	)
 
+	//Legend
+	font, err := c.OpenFont("assets/fonts/roboto/Roboto-Medium.ttf", squareSize/2)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for i := 0; i < g.pd.gridSize.X; i++ {
+		vals := g.pd.legendValuesForCol(i)
+		squareRect := g.squares[i].Rect()
+		legendH := len(vals) * squareSize
+		for j, val := range vals {
+			s := &eff.Shape{}
+			s.SetRect(eff.Rect{
+				X: board.Rect().X + squareRect.X,
+				Y: board.Rect().Y + squareRect.Y - legendH + (j * squareSize),
+				W: squareSize,
+				H: squareSize,
+			})
+			s.SetBackgroundColor(eff.Black())
+			valStr := fmt.Sprintf("%d", val)
+			textW, textH, err := c.Graphics().GetTextSize(font, valStr)
+			if err != nil {
+				log.Fatal(err)
+			}
+			textPoint := eff.Point{
+				X: (squareSize - textW) / 2,
+				Y: (squareSize - textH) / 2,
+			}
+			s.DrawText(font, valStr, eff.White(), textPoint)
+			g.AddChild(s)
+		}
+	}
+
+	for i := 0; i < g.pd.gridSize.Y; i++ {
+		vals := g.pd.legendValuesForRow(i)
+		squareRect := g.squares[i*g.pd.gridSize.X].Rect()
+		legendW := len(vals) * squareSize
+		for j, val := range vals {
+			s := &eff.Shape{}
+			s.SetRect(eff.Rect{
+				X: board.Rect().X + squareRect.X - legendW + (j * squareSize),
+				Y: board.Rect().Y + squareRect.Y,
+				W: squareSize,
+				H: squareSize,
+			})
+			s.SetBackgroundColor(eff.Black())
+			valStr := fmt.Sprintf("%d", val)
+			textW, textH, err := c.Graphics().GetTextSize(font, valStr)
+			if err != nil {
+				log.Fatal(err)
+			}
+			textPoint := eff.Point{
+				X: (squareSize - textW) / 2,
+				Y: (squareSize - textH) / 2,
+			}
+			s.DrawText(font, valStr, eff.White(), textPoint)
+			g.AddChild(s)
+		}
+	}
+
+	g.reveal()
+}
+
+func (g *game) reveal() {
 	for _, p := range g.pd.squares {
 		index := p.Y*g.pd.gridSize.X + p.X
 		g.squares[index].setState(fillState)

@@ -21,6 +21,59 @@ func (pd *puzzleData) checkSquare(p eff.Point) bool {
 	return false
 }
 
+func (pd *puzzleData) legendValuesForRow(row int) []int {
+	vals := []int{}
+	rowVals := []int{}
+
+	for _, s := range pd.squares {
+		if s.Y != row {
+			continue
+		}
+		rowVals = append(rowVals, s.X)
+	}
+
+	val := 0
+	last := 0
+	for _, v := range rowVals {
+		if v-last > 1 && val > 0 {
+			vals = append(vals, val)
+			val = 0
+		}
+		val++
+		last = val
+	}
+
+	vals = append(vals, val)
+
+	return vals
+
+}
+
+func (pd *puzzleData) legendValuesForCol(col int) []int {
+	vals := []int{}
+	colVals := []int{}
+	for _, s := range pd.squares {
+		if s.X != col {
+			continue
+		}
+		colVals = append(colVals, s.Y)
+	}
+
+	val := 0
+	last := 0
+	for _, v := range colVals {
+		if v-last > 1 && val > 0 {
+			vals = append(vals, val)
+			val = 0
+		}
+		val++
+		last = val
+	}
+
+	vals = append(vals, val)
+	return vals
+}
+
 func randomPuzzleData(w int, h int) *puzzleData {
 	pd := &puzzleData{}
 	pd.gridSize = eff.Point{
