@@ -2,6 +2,7 @@ package main
 
 import (
 	"math/rand"
+	"sort"
 
 	"github.com/forestgiant/eff"
 )
@@ -31,6 +32,7 @@ func (pd *puzzleData) legendValuesForRow(row int) []int {
 		}
 		rowVals = append(rowVals, s.X)
 	}
+	sort.Ints(rowVals)
 
 	val := 0
 	last := 0
@@ -40,7 +42,7 @@ func (pd *puzzleData) legendValuesForRow(row int) []int {
 			val = 0
 		}
 		val++
-		last = val
+		last = v
 	}
 
 	vals = append(vals, val)
@@ -58,6 +60,7 @@ func (pd *puzzleData) legendValuesForCol(col int) []int {
 		}
 		colVals = append(colVals, s.Y)
 	}
+	sort.Ints(colVals)
 
 	val := 0
 	last := 0
@@ -67,7 +70,7 @@ func (pd *puzzleData) legendValuesForCol(col int) []int {
 			val = 0
 		}
 		val++
-		last = val
+		last = v
 	}
 
 	vals = append(vals, val)

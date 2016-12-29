@@ -13,6 +13,8 @@ type square struct {
 	state     int
 	point     eff.Point
 	mouseOver bool
+	selected  bool
+	onSelect  func(int, int)
 }
 
 func (s *square) setState(state int) {
@@ -53,17 +55,30 @@ func (s *square) MouseDown(left bool, middle bool, right bool) {}
 func (s *square) MouseUp(left bool, middle bool, right bool)   {}
 func (s *square) MouseOver() {
 	s.mouseOver = true
-	color := s.BackgroundColor()
-	color.Add(0x1E)
-	s.SetBackgroundColor(color)
+	if s.onSelect != nil {
+		s.onSelect(s.point.Y, s.point.X)
+	}
+	// s.SetSelected(true)
 }
 func (s *square) MouseOut() {
 	s.mouseOver = false
-	color := s.BackgroundColor()
-	color.Add(-0x1E)
-	s.SetBackgroundColor(color)
+	// s.SetSelected(false)
 }
 func (s *square) IsMouseOver() bool { return s.mouseOver }
+
+func (s *square) SetSelected(selected bool) {
+	if s.selected == selected {
+		return
+	}
+	s.selected = selected
+	color := s.BackgroundColor()
+	if selected {
+		color.Add(0x1E)
+	} else {
+		color.Add(-0x1E)
+	}
+	s.SetBackgroundColor(color)
+}
 
 func newSquare(point eff.Point, size int) *square {
 	s := &square{}

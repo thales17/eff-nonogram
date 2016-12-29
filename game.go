@@ -44,6 +44,9 @@ func (g *game) init(c eff.Canvas) {
 			X: i % g.pd.gridSize.X,
 			Y: i / g.pd.gridSize.X,
 		}, squareSize)
+		s.onSelect = func(r int, c int) {
+			g.selectRowCol(r, c)
+		}
 		board.AddChild(s)
 		g.squares = append(g.squares, s)
 		c.AddClickable(s)
@@ -183,7 +186,7 @@ func (g *game) init(c eff.Canvas) {
 				W: squareSize,
 				H: squareSize,
 			})
-			s.SetBackgroundColor(eff.Black())
+			s.SetBackgroundColor(eff.White())
 			valStr := fmt.Sprintf("%d", val)
 			textW, textH, err := c.Graphics().GetTextSize(font, valStr)
 			if err != nil {
@@ -193,7 +196,7 @@ func (g *game) init(c eff.Canvas) {
 				X: (squareSize - textW) / 2,
 				Y: (squareSize - textH) / 2,
 			}
-			s.DrawText(font, valStr, eff.White(), textPoint)
+			s.DrawText(font, valStr, eff.Black(), textPoint)
 			g.AddChild(s)
 		}
 	}
@@ -210,7 +213,7 @@ func (g *game) init(c eff.Canvas) {
 				W: squareSize,
 				H: squareSize,
 			})
-			s.SetBackgroundColor(eff.Black())
+			s.SetBackgroundColor(eff.White())
 			valStr := fmt.Sprintf("%d", val)
 			textW, textH, err := c.Graphics().GetTextSize(font, valStr)
 			if err != nil {
@@ -220,7 +223,7 @@ func (g *game) init(c eff.Canvas) {
 				X: (squareSize - textW) / 2,
 				Y: (squareSize - textH) / 2,
 			}
-			s.DrawText(font, valStr, eff.White(), textPoint)
+			s.DrawText(font, valStr, eff.Black(), textPoint)
 			g.AddChild(s)
 		}
 	}
@@ -233,6 +236,31 @@ func (g *game) reveal() {
 		index := p.Y*g.pd.gridSize.X + p.X
 		g.squares[index].setState(fillState)
 	}
+}
+
+func (g *game) selectRowCol(r int, c int) {
+	if r > g.pd.gridSize.Y || c > g.pd.gridSize.X || r < 0 || c < 0 {
+		fmt.Println("attempt to select invalid row col:", r, c)
+		return
+	}
+	for _, s := range g.squares {
+		s.SetSelected(false)
+	}
+
+	//Rows
+	rStartIndex := r * g.pd.gridSize.X
+	rEndIndex := rStartIndex + g.pd.gridSize.X
+	rowSquares := g.squares[rStartIndex:rEndIndex]
+	for _, row := range rowSquares {
+		row.SetSelected(true)
+	}
+
+	//Cols
+	for i := 0; i < g.pd.gridSize.Y; i++ {
+		index := i*g.pd.gridSize.X + (c % g.pd.gridSize.X)
+		g.squares[index].SetSelected(true)
+	}
+
 }
 
 func newGame(pd *puzzleData, c eff.Canvas) *game {
