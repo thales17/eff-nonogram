@@ -38,7 +38,6 @@ func (g *game) init(c eff.Canvas) {
 	g.AddChild(board)
 	c.AddChild(g)
 
-	//Grid
 	for i := 0; i < g.pd.gridSize.X*g.pd.gridSize.Y; i++ {
 		s := newSquare(eff.Point{
 			X: i % g.pd.gridSize.X,
@@ -47,11 +46,22 @@ func (g *game) init(c eff.Canvas) {
 		s.onSelect = func(r int, c int) {
 			g.selectRowCol(r, c)
 		}
+		s.check = func(r int, c int) bool {
+			for _, p := range g.pd.squares {
+				if p.X == r && p.Y == c {
+					return true
+				}
+			}
+
+			return false
+		}
+
 		board.AddChild(s)
 		g.squares = append(g.squares, s)
 		c.AddClickable(s)
 	}
 
+	//Grid
 	grid := &eff.Shape{}
 	grid.SetRect(eff.Rect{
 		X: 0,
@@ -78,28 +88,12 @@ func (g *game) init(c eff.Canvas) {
 			color,
 		)
 		if i%5 == 0 && i > 0 {
-			grid.DrawLine(
-				eff.Point{
-					X: i*squareSize - 1,
-					Y: 0,
-				},
-				eff.Point{
-					X: i*squareSize - 1,
-					Y: grid.Rect().H,
-				},
-				color,
-			)
-			grid.DrawLine(
-				eff.Point{
-					X: i*squareSize + 1,
-					Y: 0,
-				},
-				eff.Point{
-					X: i*squareSize + 1,
-					Y: grid.Rect().H,
-				},
-				color,
-			)
+			grid.FillRect(eff.Rect{
+				X: i*squareSize - 1,
+				Y: 0,
+				W: 3,
+				H: grid.Rect().H,
+			}, color)
 		}
 	}
 	grid.DrawLine(
@@ -131,28 +125,12 @@ func (g *game) init(c eff.Canvas) {
 			color,
 		)
 		if i%5 == 0 && i > 0 {
-			grid.DrawLine(
-				eff.Point{
-					X: 0,
-					Y: i*squareSize - 1,
-				},
-				eff.Point{
-					X: grid.Rect().W,
-					Y: i*squareSize - 1,
-				},
-				color,
-			)
-			grid.DrawLine(
-				eff.Point{
-					X: 0,
-					Y: i*squareSize + 1,
-				},
-				eff.Point{
-					X: grid.Rect().W,
-					Y: i*squareSize + 1,
-				},
-				color,
-			)
+			grid.FillRect(eff.Rect{
+				X: 0,
+				Y: i*squareSize - 1,
+				W: grid.Rect().W,
+				H: 3,
+			}, color)
 		}
 	}
 
@@ -227,8 +205,6 @@ func (g *game) init(c eff.Canvas) {
 			g.AddChild(s)
 		}
 	}
-
-	g.reveal()
 }
 
 func (g *game) reveal() {

@@ -3,9 +3,10 @@ package main
 import "github.com/forestgiant/eff"
 
 const (
-	defaultState = 0
-	xState       = 1
-	fillState    = 2
+	defaultState        = 0
+	xState              = 1
+	fillState           = 2
+	emptyIncorrectState = 3
 )
 
 type square struct {
@@ -13,8 +14,11 @@ type square struct {
 	state     int
 	point     eff.Point
 	mouseOver bool
+	leftDown  bool
+	rightDown bool
 	selected  bool
 	onSelect  func(int, int)
+	check     func(int, int) bool
 }
 
 func (s *square) setState(state int) {
@@ -44,6 +48,24 @@ func (s *square) setState(state int) {
 			eff.Point{X: 0, Y: s.Rect().H},
 			eff.Black(),
 		)
+	} else if state == emptyIncorrectState {
+		color := eff.Color{R: 0xEE, G: 0xEE, B: 0xEE, A: 0xFF}
+		if s.point.X%2 == 1 {
+			color.Add(-5)
+		}
+		if s.point.Y%2 == 1 {
+			color.Add(-5)
+		}
+
+		s.SetBackgroundColor(color)
+
+		borderRect := eff.Rect{
+			X: 1,
+			Y: 1,
+			W: s.Rect().W - 2,
+			H: s.Rect().H - 2,
+		}
+		s.StrokeRect(borderRect, eff.Color{R: 0xFF, G: 0x00, B: 0x00, A: 0xFF})
 	}
 }
 
@@ -51,18 +73,48 @@ func (s *square) Hitbox() eff.Rect {
 	return s.ParentOffsetRect()
 }
 
-func (s *square) MouseDown(left bool, middle bool, right bool) {}
-func (s *square) MouseUp(left bool, middle bool, right bool)   {}
+func (s *square) MouseDown(left bool, middle bool, right bool) {
+	s.leftDown = left
+	s.rightDown = right
+}
+
+func (s *square) MouseUp(left bool, middle bool, right bool) {
+	if left && s.leftDown {
+		s.leftDown = false
+		if s.state == defaultState {
+			if s.check != nil {
+				if s.check(s.point.X, s.point.Y) {
+					s.setState(fillState)
+				} else {
+					s.setState(emptyIncorrectState)
+				}
+			} else {
+				s.setState(fillState)
+			}
+		}
+	}
+
+	if right && s.rightDown {
+		s.rightDown = false
+		if s.state == defaultState {
+			s.setState(xState)
+		} else if s.state == xState {
+			s.setState(defaultState)
+		}
+	}
+}
+
 func (s *square) MouseOver() {
 	s.mouseOver = true
 	if s.onSelect != nil {
 		s.onSelect(s.point.Y, s.point.X)
 	}
-	// s.SetSelected(true)
 }
+
 func (s *square) MouseOut() {
 	s.mouseOver = false
-	// s.SetSelected(false)
+	s.leftDown = false
+	s.rightDown = false
 }
 func (s *square) IsMouseOver() bool { return s.mouseOver }
 

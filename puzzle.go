@@ -1,10 +1,17 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
 	"math/rand"
+	"os"
 	"sort"
+	"strings"
+
+	"strconv"
 
 	"github.com/forestgiant/eff"
+	"github.com/pkg/errors"
 )
 
 type puzzleData struct {
@@ -77,6 +84,28 @@ func (pd *puzzleData) legendValuesForCol(col int) []int {
 	return vals
 }
 
+func (pd *puzzleData) save(path string) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = f.WriteString(fmt.Sprintf("%d,%d\n", pd.gridSize.X, pd.gridSize.Y))
+	if err != nil {
+		return err
+	}
+	f.Sync()
+	for _, s := range pd.squares {
+		_, err = f.WriteString(fmt.Sprintf("%d,%d\n", s.X, s.Y))
+		if err != nil {
+			return err
+		}
+		f.Sync()
+	}
+	return nil
+}
+
 func randomPuzzleData(w int, h int) *puzzleData {
 	pd := &puzzleData{}
 	pd.gridSize = eff.Point{
@@ -101,4 +130,51 @@ func randomPuzzleData(w int, h int) *puzzleData {
 	}
 
 	return pd
+}
+
+func load(path string) (*puzzleData, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	rows := strings.Split(string(data), "\n")
+	if len(rows) < 2 {
+		return nil, errors.New("invalid file")
+	}
+
+	parseRow := func(row string) (int, int, error) {
+		rowVals := strings.Split(rows[0], ",")
+		if len(rowVals) != 2 {
+			return 0, 0, errors.New("invalid file")
+		}
+		x, err := strconv.Atoi(rowVals[0])
+		if err != nil {
+			return 0, 0, err
+		}
+		y, err := strconv.Atoi(rowVals[1])
+		if err != nil {
+			return 0, 0, err
+		}
+
+		return x, y, nil
+	}
+
+	pd := &puzzleData{}
+	x, y, err := parseRow(rows[0])
+	if err != nil {
+		return nil, err
+	}
+	pd.gridSize.X = x
+	pd.gridSize.Y = y
+
+	for _, row := range rows[1:] {
+		x, y, err := parseRow(row)
+		if err != nil {
+			return nil, err
+		}
+
+		pd.squares = append(pd.squares, eff.Point{X: x, Y: y})
+	}
+	return pd, nil
 }
