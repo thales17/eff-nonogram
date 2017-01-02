@@ -3,10 +3,10 @@ package main
 import "github.com/forestgiant/eff"
 
 const (
-	defaultState        = 0
-	xState              = 1
-	fillState           = 2
-	emptyIncorrectState = 3
+	defaultState   = 0
+	xState         = 1
+	fillState      = 2
+	incorrectState = 3
 )
 
 type square struct {
@@ -24,7 +24,7 @@ type square struct {
 func (s *square) setState(state int) {
 	s.state = state
 	s.Clear()
-	if state == defaultState {
+	if state == defaultState || state == incorrectState {
 		color := eff.Color{R: 0xEE, G: 0xEE, B: 0xEE, A: 0xFF}
 		if s.point.X%2 == 1 {
 			color.Add(-5)
@@ -34,6 +34,17 @@ func (s *square) setState(state int) {
 		}
 
 		s.SetBackgroundColor(color)
+
+		if state == incorrectState {
+			borderRect := eff.Rect{
+				X: 1,
+				Y: 1,
+				W: s.Rect().W - 2,
+				H: s.Rect().H - 2,
+			}
+			s.StrokeRect(borderRect, eff.Color{R: 0xFF, G: 0x00, B: 0x00, A: 0xFF})
+		}
+
 	} else if state == fillState {
 		s.SetBackgroundColor(eff.Color{R: 0x33, B: 0x33, G: 0x33, A: 0xFF})
 	} else if state == xState {
@@ -48,24 +59,6 @@ func (s *square) setState(state int) {
 			eff.Point{X: 0, Y: s.Rect().H},
 			eff.Black(),
 		)
-	} else if state == emptyIncorrectState {
-		color := eff.Color{R: 0xEE, G: 0xEE, B: 0xEE, A: 0xFF}
-		if s.point.X%2 == 1 {
-			color.Add(-5)
-		}
-		if s.point.Y%2 == 1 {
-			color.Add(-5)
-		}
-
-		s.SetBackgroundColor(color)
-
-		borderRect := eff.Rect{
-			X: 1,
-			Y: 1,
-			W: s.Rect().W - 2,
-			H: s.Rect().H - 2,
-		}
-		s.StrokeRect(borderRect, eff.Color{R: 0xFF, G: 0x00, B: 0x00, A: 0xFF})
 	}
 }
 
@@ -86,7 +79,7 @@ func (s *square) MouseUp(left bool, middle bool, right bool) {
 				if s.check(s.point.X, s.point.Y) {
 					s.setState(fillState)
 				} else {
-					s.setState(emptyIncorrectState)
+					s.setState(incorrectState)
 				}
 			} else {
 				s.setState(fillState)

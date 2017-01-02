@@ -11,8 +11,10 @@ import (
 
 type game struct {
 	eff.Shape
-	pd      *puzzleData
-	squares []*square
+	pd         *puzzleData
+	squares    []*square
+	createMode bool
+	path       string
 }
 
 func (g *game) init(c eff.Canvas) {
@@ -47,6 +49,12 @@ func (g *game) init(c eff.Canvas) {
 			g.selectRowCol(r, c)
 		}
 		s.check = func(r int, c int) bool {
+			if g.createMode {
+				g.pd.squares = append(g.pd.squares, eff.Point{X: r, Y: c})
+				g.pd.save(g.path)
+				return true
+			}
+
 			for _, p := range g.pd.squares {
 				if p.X == r && p.Y == c {
 					return true
@@ -209,7 +217,7 @@ func (g *game) init(c eff.Canvas) {
 
 func (g *game) reveal() {
 	for _, p := range g.pd.squares {
-		index := p.Y*g.pd.gridSize.X + p.X
+		index := p.X*g.pd.gridSize.X + p.Y
 		g.squares[index].setState(fillState)
 	}
 }

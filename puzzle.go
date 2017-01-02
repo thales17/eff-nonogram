@@ -10,8 +10,9 @@ import (
 
 	"strconv"
 
+	"errors"
+
 	"github.com/forestgiant/eff"
-	"github.com/pkg/errors"
 )
 
 type puzzleData struct {

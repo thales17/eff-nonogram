@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 	"math/rand"
 	"time"
 
@@ -22,16 +23,34 @@ func main() {
 		pathPtr := flag.String("path", "", "specifies the path to the puzzle, if none provide a random puzzle will be generated")
 		gridSizeXPtr := flag.Uint("gridSizeX", 10, "specify the width of the puzzle grid, this is used when creating a new puzzle or playing a random one")
 		gridSizeYPtr := flag.Uint("gridSizeY", 10, "specify the height of the puzzle grid, this is used when creating a new puzzle or playing a random one")
-		// revealPtr := flag.Bool("reveal", true, "reveals the puzzle")
+		revealPtr := flag.Bool("reveal", false, "reveals the puzzle")
 		flag.Parse()
-		if *createPtr != false && len(*pathPtr) == 0 {
-			// log.Fatal(flag.Usage())
+		if *createPtr && len(*pathPtr) == 0 {
+			log.Fatal("Create flag passed with out a path")
 		}
 
-		if *createPtr == false && len(*pathPtr) == 0 {
-			/*g := */ newGame(randomPuzzleData(int(*gridSizeXPtr), int(*gridSizeYPtr)), canvas)
-			// g.reveal()
+		var pd *puzzleData
+		var err error
+		if !*createPtr && len(*pathPtr) == 0 {
+			pd = randomPuzzleData(int(*gridSizeXPtr), int(*gridSizeYPtr))
+		} else if !*createPtr && len(*pathPtr) > 0 {
+			pd, err = load(*pathPtr)
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else if *createPtr && len(*pathPtr) > 0 {
+			pd = &puzzleData{}
+			pd.gridSize.X = int(*gridSizeXPtr)
+			pd.gridSize.Y = int(*gridSizeYPtr)
 		}
 
+		g := newGame(pd, canvas)
+		if *createPtr {
+			g.createMode = true
+			g.path = *pathPtr
+		}
+		if *revealPtr {
+			g.reveal()
+		}
 	})
 }
