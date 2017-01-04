@@ -190,7 +190,7 @@ func (g *game) init(c eff.Canvas) {
 
 func (g *game) reveal() {
 	for _, p := range g.pd.squares {
-		index := p.X*g.pd.gridSize.X + p.Y
+		index := p.Y*g.pd.gridSize.X + p.X
 		g.squares[index].setState(fillState)
 	}
 }
