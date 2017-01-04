@@ -36,13 +36,12 @@ func (s *square) setState(state int) {
 		s.SetBackgroundColor(color)
 
 		if state == incorrectState {
-			borderRect := eff.Rect{
-				X: 1,
-				Y: 1,
-				W: s.Rect().W - 2,
-				H: s.Rect().H - 2,
-			}
-			s.StrokeRect(borderRect, eff.Color{R: 0xFF, G: 0x00, B: 0x00, A: 0xFF})
+			strokeWidth := 2
+			color := eff.Color{R: 0xFF, G: 0x00, B: 0x00, A: 0xFF}
+			s.FillRect(eff.Rect{X: gridWidth, Y: gridWidth, W: s.Rect().W - gridWidth, H: strokeWidth}, color)
+			s.FillRect(eff.Rect{X: s.Rect().W - strokeWidth, Y: strokeWidth, W: strokeWidth, H: s.Rect().H - (strokeWidth * 2)}, color)
+			s.FillRect(eff.Rect{X: gridWidth, Y: s.Rect().H - strokeWidth, W: s.Rect().W - gridWidth, H: strokeWidth}, color)
+			s.FillRect(eff.Rect{X: gridWidth, Y: strokeWidth, W: strokeWidth, H: s.Rect().H - (strokeWidth * 2)}, color)
 		}
 
 	} else if state == fillState {

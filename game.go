@@ -9,6 +9,11 @@ import (
 	"github.com/forestgiant/eff"
 )
 
+const (
+	gridWidth = 1
+	fiveWidth = 3
+)
+
 type game struct {
 	eff.Shape
 	pd         *puzzleData
@@ -84,75 +89,43 @@ func (g *game) init(c eff.Canvas) {
 		if i%5 == 0 && i > 0 {
 			color = gridBlue
 		}
-		grid.DrawLine(
-			eff.Point{
-				X: i * squareSize,
-				Y: 0,
-			},
-			eff.Point{
-				X: i * squareSize,
-				Y: grid.Rect().H,
-			},
-			color,
-		)
+
+		grid.FillRect(eff.Rect{
+			X: i * squareSize,
+			Y: 0,
+			W: gridWidth,
+			H: grid.Rect().H,
+		}, color)
+
 		if i%5 == 0 && i > 0 {
 			grid.FillRect(eff.Rect{
-				X: i*squareSize - 1,
+				X: i*squareSize - (fiveWidth / 2),
 				Y: 0,
-				W: 3,
+				W: fiveWidth,
 				H: grid.Rect().H,
 			}, color)
 		}
 	}
-	grid.DrawLine(
-		eff.Point{
-			X: grid.Rect().W - 1,
-			Y: 0,
-		},
-		eff.Point{
-			X: grid.Rect().W - 1,
-			Y: grid.Rect().H,
-		},
-		eff.Black(),
-	)
+	grid.FillRect(eff.Rect{X: grid.Rect().W - gridWidth, Y: 0, W: gridWidth, H: grid.Rect().H}, eff.Black())
 
 	for i := 0; i < g.pd.gridSize.Y; i++ {
 		color := eff.Black()
 		if i%5 == 0 && i > 0 {
 			color = gridBlue
 		}
-		grid.DrawLine(
-			eff.Point{
-				X: 0,
-				Y: i * squareSize,
-			},
-			eff.Point{
-				X: grid.Rect().W,
-				Y: i * squareSize,
-			},
-			color,
-		)
+		grid.FillRect(eff.Rect{X: 0, Y: i * squareSize, W: grid.Rect().W, H: gridWidth}, color)
+
 		if i%5 == 0 && i > 0 {
 			grid.FillRect(eff.Rect{
 				X: 0,
-				Y: i*squareSize - 1,
+				Y: i*squareSize - (fiveWidth / 2),
 				W: grid.Rect().W,
-				H: 3,
+				H: fiveWidth,
 			}, color)
 		}
 	}
 
-	grid.DrawLine(
-		eff.Point{
-			X: 0,
-			Y: grid.Rect().H - 1,
-		},
-		eff.Point{
-			X: grid.Rect().W,
-			Y: grid.Rect().H - 1,
-		},
-		eff.Black(),
-	)
+	grid.FillRect(eff.Rect{X: 0, Y: grid.Rect().H - gridWidth, W: grid.Rect().W, H: gridWidth}, eff.Black())
 
 	//Legend
 	font, err := c.OpenFont("assets/fonts/roboto/Roboto-Medium.ttf", squareSize/2)
