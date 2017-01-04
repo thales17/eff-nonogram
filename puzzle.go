@@ -140,14 +140,15 @@ func load(path string) (*puzzleData, error) {
 	}
 
 	rows := strings.Split(string(data), "\n")
+	// fmt.Println(rows)
 	if len(rows) < 2 {
 		return nil, errors.New("invalid file")
 	}
 
 	parseRow := func(row string) (int, int, error) {
-		rowVals := strings.Split(rows[0], ",")
+		rowVals := strings.Split(row, ",")
 		if len(rowVals) != 2 {
-			return 0, 0, errors.New("invalid file")
+			return 0, 0, errors.New("invalid row")
 		}
 		x, err := strconv.Atoi(rowVals[0])
 		if err != nil {
@@ -172,7 +173,7 @@ func load(path string) (*puzzleData, error) {
 	for _, row := range rows[1:] {
 		x, y, err := parseRow(row)
 		if err != nil {
-			return nil, err
+			continue
 		}
 
 		pd.squares = append(pd.squares, eff.Point{X: x, Y: y})

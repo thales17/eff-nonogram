@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"time"
 
+	"fmt"
+
 	"github.com/forestgiant/eff"
 	"github.com/forestgiant/eff/sdl"
 )
@@ -35,6 +37,7 @@ func main() {
 			pd = randomPuzzleData(int(*gridSizeXPtr), int(*gridSizeYPtr))
 		} else if !*createPtr && len(*pathPtr) > 0 {
 			pd, err = load(*pathPtr)
+			fmt.Println("loaded puzzle", pd)
 			if err != nil {
 				log.Fatal(err)
 			}
