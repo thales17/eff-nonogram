@@ -21,8 +21,8 @@ func main() {
 		rand.Seed(time.Now().UnixNano())
 		createPtr := flag.Bool("create", false, "creates a new puzzle file, requires the path")
 		pathPtr := flag.String("path", "", "specifies the path to the puzzle, if none provide a random puzzle will be generated")
-		gridSizeXPtr := flag.Uint("gridSizeX", 10, "specify the width of the puzzle grid, this is used when creating a new puzzle or playing a random one")
-		gridSizeYPtr := flag.Uint("gridSizeY", 10, "specify the height of the puzzle grid, this is used when creating a new puzzle or playing a random one")
+		gridSizeXPtr := flag.Uint("sizeX", 10, "specify the width of the puzzle grid, this is used when creating a new puzzle or playing a random one")
+		gridSizeYPtr := flag.Uint("sizeY", 10, "specify the height of the puzzle grid, this is used when creating a new puzzle or playing a random one")
 		revealPtr := flag.Bool("reveal", false, "reveals the puzzle")
 		flag.Parse()
 		if *createPtr && len(*pathPtr) == 0 {

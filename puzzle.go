@@ -12,12 +12,15 @@ import (
 
 	"errors"
 
+	"path"
+
 	"github.com/forestgiant/eff"
 )
 
 type puzzleData struct {
 	gridSize eff.Point
 	squares  []eff.Point
+	title    string
 }
 
 func (pd *puzzleData) checkSquare(p eff.Point) bool {
@@ -130,11 +133,12 @@ func randomPuzzleData(w int, h int) *puzzleData {
 		pd.squares = append(pd.squares, p)
 	}
 
+	pd.title = "Random"
 	return pd
 }
 
-func load(path string) (*puzzleData, error) {
-	data, err := ioutil.ReadFile(path)
+func load(puzzlePath string) (*puzzleData, error) {
+	data, err := ioutil.ReadFile(puzzlePath)
 	if err != nil {
 		return nil, err
 	}
@@ -178,5 +182,7 @@ func load(path string) (*puzzleData, error) {
 
 		pd.squares = append(pd.squares, eff.Point{X: x, Y: y})
 	}
+
+	pd.title = path.Base(puzzlePath)
 	return pd, nil
 }

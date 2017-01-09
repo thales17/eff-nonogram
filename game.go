@@ -20,6 +20,8 @@ type game struct {
 	squares    []*square
 	createMode bool
 	path       string
+	title      *eff.Shape
+	headerFont eff.Font
 }
 
 func (g *game) init(c eff.Canvas) {
@@ -27,17 +29,20 @@ func (g *game) init(c eff.Canvas) {
 	g.SetBackgroundColor(eff.White())
 
 	// Squares
-	cellW := c.Rect().W / (g.pd.gridSize.X + (g.pd.gridSize.X / 2))
-	cellH := c.Rect().H / (g.pd.gridSize.Y + (g.pd.gridSize.Y / 2))
+	maxLegendW := int(math.Ceil(float64(g.pd.gridSize.X) / 2))
+	maxLegendH := int(math.Ceil(float64(g.pd.gridSize.Y) / 2))
+	headerHeight := 70
+	cellW := c.Rect().W / (g.pd.gridSize.X + maxLegendW)
+	cellH := (c.Rect().H - headerHeight) / (g.pd.gridSize.Y + maxLegendH + 1)
 	squareSize := int(math.Min(float64(cellW), float64(cellH)))
-	legendW := squareSize * (g.pd.gridSize.X / 2)
-	legendH := squareSize * (g.pd.gridSize.Y / 2)
+	legendW := squareSize * maxLegendW
+	legendH := squareSize * maxLegendH
 	boardLegendW := squareSize*(g.pd.gridSize.X) + legendW
 	boardLegendH := squareSize*(g.pd.gridSize.Y) + legendH
 	board := &eff.Shape{}
 	board.SetRect(eff.Rect{
 		X: (c.Rect().W-boardLegendW)/2 + legendW,
-		Y: (c.Rect().H-boardLegendH)/2 + legendH,
+		Y: (c.Rect().H-boardLegendH-headerHeight)/2 + legendH + headerHeight,
 		W: squareSize * g.pd.gridSize.X,
 		H: squareSize * g.pd.gridSize.Y,
 	})
@@ -186,6 +191,36 @@ func (g *game) init(c eff.Canvas) {
 			g.AddChild(s)
 		}
 	}
+
+	//Title
+	g.headerFont, err = c.OpenFont("assets/fonts/roboto/Roboto-Medium.ttf", headerHeight/2)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	g.title = &eff.Shape{}
+	g.title.SetRect(eff.Rect{
+		X: 0,
+		Y: 0,
+		W: c.Rect().W,
+		H: headerHeight,
+	})
+	g.title.SetBackgroundColor(eff.Color{R: 0x66, G: 0xCC, B: 0xFF, A: 0xFF})
+	g.AddChild(g.title)
+	g.setTitle(fmt.Sprintf("%s %dx%d", g.pd.title, g.pd.gridSize.X, g.pd.gridSize.Y))
+}
+
+func (g *game) setTitle(text string) {
+	g.title.Clear()
+	_, textH, err := g.Graphics().GetTextSize(g.headerFont, text)
+	if err != nil {
+		log.Fatal(err)
+	}
+	textPoint := eff.Point{
+		X: 10,
+		Y: (g.title.Rect().H - textH) / 2,
+	}
+	g.title.DrawText(g.headerFont, text, eff.Color{R: 0x33, G: 0x33, B: 0x33, A: 0xFF}, textPoint)
 }
 
 func (g *game) reveal() {
